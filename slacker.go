@@ -12,17 +12,22 @@ import (
 func main() {
 	slackToken := getToken()
 
+	text, err := ioutil.ReadFile("message.txt")
+	if err != nil {
+		log.Panic(fmt.Sprintf("Error opening message.txt for canned response: %s", err))
+	}
+
 	conn, err := slack.Connect(slackToken)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	slack.EventProcessor(conn, handler, nil)
-}
-
-func handler(message *slack.Message) {
-	message.Respond("I am afraid I am currently out of the office on annual leave returning Monday 17th August.  If you require urgent assistance, please contact @darius")
+	slack.EventProcessor(conn,
+		func(message *slack.Message) {
+			message.Respond(string(text))
+		},
+		nil)
 }
 
 // getToken for authenticating with Slack.  Ordered lookup process trying first the command line,
